@@ -6,6 +6,7 @@ let mongoose = require('mongoose');
 let morgan = require('morgan');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+let fs = require('fs');
 
 const config = require('./configs/config.js');
 
@@ -47,6 +48,24 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (err) => {
   console.log(`unhandled rejection occurred`);
   console.log(err);
+})
+
+/** 
+ * importing all models and routes files.
+ */
+fs.readdirSync('./models').forEach((file) => {
+  if (file.indexOf('.js')) require(`./models/${file}`);
+})
+
+fs.readdirSync('./routes').forEach((file) => {
+  if (file.indexOf('.js')) require(`./routes/${file}`).routers(app);
+})
+
+/**
+ * handling route not found error.
+ */
+app.use((req, res) => {
+  res.status(404).send({error: true, message: `route not found.`, data: null});
 })
 
 // app listens at specified port.
