@@ -25,6 +25,8 @@ There is a route "/contest/join" in ./routes/contestRoute.js file which is for j
 but before this you have to create atleast one wallet and contest in database,
 which you can do using respective apis.
 
+While making post and put api request make sure you pass urlencoded body data format.
+
 You can change the default configuration in config.js file in configs folder.
 
 You can also change mongodb uri to connect in config.js file, by default it is set to localhost.
