@@ -108,7 +108,7 @@ let updateWallet = (req, res) => {
         } // end else.
       })
   }
-} // end of the setupWallet function.
+} // end of the updateWallet function.
 
 /**
  * exporting controller function.

@@ -13,7 +13,7 @@ let contestSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  contestUniqueName: {
+  contestId: {
     type: String,
     required: true,
     unique: true
