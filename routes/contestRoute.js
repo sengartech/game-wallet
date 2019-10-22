@@ -16,4 +16,8 @@ module.exports.routers = (app) => {
   // optional params: displayName, entryFee.
   app.put('/contest/update', contestController.updateContest);
 
+  // required params: userId, contestId.
+  // optional params: discount.
+  app.put('/contest/join', contestController.joinContest);
+
 } // end of router.

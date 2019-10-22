@@ -26,7 +26,8 @@ let contestSchema = new Schema({
     type: Number,
     default: 100
   }
-  // we can also add more fields like: prizeMoney, maxAllowedParticipants, etc.
+  // we can also add more fields like:
+  // prizeMoney, maxAllowedParticipants, userIdList(to store participants) etc.
   // in our case "entryFee" is mainly required.
 })
 

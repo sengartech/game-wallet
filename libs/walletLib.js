@@ -70,17 +70,17 @@ let calcWalletAmount = (dataObj) => {
 
 } // end of calcWalletAmount.
 
-// test our function.
-let obj = {
-  bonusAmount: 60,
-  depositAmount: 100,
-  winningAmount: 340,
-  discount: 20,
-  entryFee: 400
-}
+// // test our function.
+// let obj = {
+//   bonusAmount: 60,
+//   depositAmount: 100,
+//   winningAmount: 340,
+//   discount: 20,
+//   entryFee: 400
+// }
 
-console.log(`test running our calcWalletAmount function.`);
-console.log(`wallet after joining contest:\n`, calcWalletAmount(obj));
+// console.log(`test running our calcWalletAmount function.`);
+// console.log(`wallet after joining contest:\n`, calcWalletAmount(obj));
 
 module.exports = {
   calcWalletAmount

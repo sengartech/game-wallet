@@ -2,8 +2,10 @@
  * importing moules.
  */
 let mongoose = require('mongoose');
+let walletLib = require('../libs/walletLib.js');
 
 let ContestModel = mongoose.model('ContestModel');
+let WalletModel = mongoose.model('WalletModel');
 
 /**
  * controllers function to get all contests.
@@ -97,10 +99,136 @@ let updateContest = (req, res) => {
 } // end of the updateContest function.
 
 /**
+ * function to join contest.
+ * required params: userId, contestId.
+ * optional params: discount.
+ */
+let joinContest = (req, res) => {
+  console.log(`-- inside joinContest function --`);
+  // function to check body params.
+  let checkParams = () => {
+    return new Promise((resolve, reject) => {
+      if (!req.body.contestId || !req.body.userId) {
+        console.log('parameters missing.');
+        let info = { error: true, status: 400, message: `parameters missing.`, data: null }
+        reject(info);
+      } else {
+        resolve();
+      }
+    })
+  } // end of the checkParams.
+
+  // function to get user wallet.
+  let getWallet = () => {
+    return new Promise((resolve, reject) => {
+      console.log(`-- inside getWallet function --`);
+      let findQuery = {
+        userId: req.body.userId
+      }
+
+      WalletModel.findOne(findQuery)
+        .exec((err, walletInfo) => {
+          if (err) {
+            console.log(`error occurred: ${err}`);
+            let info = { error: true, status: 500, message: `error occurred: ${err.message}`, data: null }
+            reject(info);
+          } else if (!walletInfo) {
+            console.log(`no wallet found for the given userId.`);
+            let info = { error: true, status: 400, message: `no wallet found for the given userId.`, data: null }
+            reject(info);
+          } else {
+            console.log(`wallet found.`);
+            resolve(walletInfo);
+          } // end else.
+        })
+    })
+  } // end of the getWallet function.
+
+  // function to get contest and modify wallet after joining.
+  let getContestAndModifyWallet = (walletInfo) => {
+    return new Promise((resolve, reject) => {
+      let findQuery = {
+        contestId: req.body.contestId
+      }
+
+      ContestModel.findOne(findQuery)
+        .exec((err, contestInfo) => {
+          if (err) {
+            console.log(`error occurred: ${err}`);
+            let info = { error: true, status: 500, message: `error occurred: ${err.message}`, data: null }
+            reject(info);
+          } else if (!contestInfo) {
+            console.log(`no contest found for the given contestId.`);
+            let info = { error: true, status: 400, message: `no contest found for the given contestId.`, data: null }
+            reject(info);
+          } else {
+            console.log(`contest found.`);
+
+            // preparing object to call calcWalletAmount function.
+            // it will calculate wallet after joining if there is sufficent balance.
+            let dataObj = {
+              bonusAmount: walletInfo.bonusAmount,
+              depositAmount: walletInfo.depositAmount,
+              winningAmount: walletInfo.winningAmount,
+              entryFee: contestInfo.entryFee,
+              discount: (Number(req.body.discount) >= 0) ? Number(req.body.discount) : 0
+            }
+
+            let walletAfterJoining = walletLib.calcWalletAmount(dataObj);
+
+            console.log('wallet after joining contest:\n', walletAfterJoining);
+
+            if (walletAfterJoining) {
+              // updating wallet.
+              console.log(`updating wallet...`);
+              walletInfo.depositAmount = walletAfterJoining.depositAmount;
+              walletInfo.bonusAmount = walletAfterJoining.bonusAmount;
+              walletInfo.winningAmount = walletAfterJoining.winningAmount;
+              walletInfo.totalAmount = walletAfterJoining.totalAmount;
+
+              walletInfo.modifiedOn = Date.now();
+
+              walletInfo.save((err, updatedWallet) => {
+                if (err) {
+                  console.log(`error occurred: ${err}`);
+                  let info = { error: true, status: 500, message: `error occurred: ${err.message}`, data: null }
+                  reject(info);
+                } else {
+                  console.log(`contest joined and wallet updated.`);
+                  let info = { error: false, status: 200, message: `contest joined and wallet updated.`, data: updatedWallet }
+                  resolve(info);
+                }
+              })
+            } else {
+              // insufficient balance.
+              let info = { error: true, status: 400, message: `have insufficient balance.`, data: walletInfo }
+              reject(info);
+            }
+          } // end else.
+        })
+    })
+  } // end of the getContestAndModifyWallet function.
+
+  // making promise call.
+  checkParams()
+    .then(getWallet)
+    .then(getContestAndModifyWallet)
+    .then((result) => {
+      res.status(result.status).send(result);
+    })
+    .catch((error) => {
+      console.log(error);
+      if (error.status) res.status(error.status).send(error);
+      else res.send(error);
+    })
+} // end of the joinContest function.
+
+/**
  * exporting controller function.
  */
 module.exports = {
   getAllContests,
   createContest,
-  updateContest
+  updateContest,
+  joinContest
 }
