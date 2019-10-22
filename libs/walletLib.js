@@ -70,7 +70,7 @@ let calcWalletAmount = (dataObj) => {
 
 } // end of calcWalletAmount.
 
-// // test our function.
+// // // test our function.
 // let obj = {
 //   bonusAmount: 60,
 //   depositAmount: 100,
